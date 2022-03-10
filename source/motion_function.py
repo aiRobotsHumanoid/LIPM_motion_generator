@@ -5,8 +5,8 @@ import numpy as np
 from datetime import datetime
 from pathlib import Path
 import matplotlib.pyplot as plt
-from LIPM_function import Heaviside
-from InverseKinematics import InvK
+from source.LIPM_function import Heaviside
+from source.InverseKinematics import InvK
 
 def mod(x, y):
     if x*y < 0:
