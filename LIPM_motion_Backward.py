@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 from pathlib import Path
 import time
-from command_generator import Cmd_Generator
+from source.command_generator import Cmd_Generator
 
 write_data = True
 motion_file = "./source/motordata/B_data.csv"    # LIPM給模擬環境的動作檔 
@@ -167,9 +167,9 @@ class LIPM_motion:
         #########################################################################
         ##                           Gait Generation                           ##
         #########################################################################
-        from motion_function import StepSize2StrideLength, StrideLength2ZMPAmplitude, Vec_Arr_Sam, \
+        from source.motion_function import StepSize2StrideLength, StrideLength2ZMPAmplitude, Vec_Arr_Sam, \
             Completed_R_generation, modifiable_foot_generation, OutputMotion
-        from LIPM_function import modifiable_x_OSG_RampDSP_RampSSP, modifiable_y_OSG_RampDSP_SinSSP
+        from source.LIPM_function import modifiable_x_OSG_RampDSP_RampSSP, modifiable_y_OSG_RampDSP_SinSSP
 
         [LR, LL, L] = StepSize2StrideLength(vector_S)
         A = StrideLength2ZMPAmplitude(L)
