@@ -11,7 +11,7 @@ from command_generator import Cmd_Generator
 
 write_data = True
 motion_file = "./source/motordata/forward_data.csv"    # LIPM給模擬環境的動作檔 
-w_file = "./Motion_cmd/Forward.csv" # motor的刻度檔案
+w_file = "./Motion_cmd/Motion_Forward.csv" # motor的刻度檔案
 
 
 class LIPM_motion:
