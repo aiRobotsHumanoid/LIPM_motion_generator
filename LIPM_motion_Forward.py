@@ -39,7 +39,7 @@ class LIPM_motion:
                             #    1      2       3       4       5                   
         self.A_Lean_angle_R = [[ 4.00,   -0.0,    0.40,    1.00,     0.2], \
                                [ 0.5,      2.00,    4.0,   3.0,      2 ] ]
-        self.A_Lean_angle_L = [[ 0,     0,   0,   0,     0], \
+        self.A_Lean_angle_L = [[ -0.1,     -0.1,   0,   0,     0], \
                                [-0.3,    -1.5,    -1.0,    -0.5,      0.0]]
         
         # 向前的跨步距離 (+)forward (-)backward
