@@ -60,7 +60,7 @@ class LIPM_motion:
         self.A_DesiredTheta_R = [[   0,   -2,   -5,   -8,   -10],\
                                  [  -10,   -8,   -5,   -2,    0]]
         self.A_DesiredTheta_L = [[  -0,    0,    0,    0,    0],\
-                                 [  -0,    -1.5,    -3,    -1.5,    0]]
+                                 [  -0,    -1.5,    -3,    -1.5,    0]] 
         """ 機器人質心高度設定 """
         self.foot_height = 0.59        # foot_height: 行走時髖關節的高度，影響機器人行走時蹲的幅度 
         self.zc = 0.38 #0.45           # zc: 質心高度，影響LIPM產生的質心軌跡 
