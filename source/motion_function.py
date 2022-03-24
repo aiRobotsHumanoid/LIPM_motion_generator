@@ -185,11 +185,11 @@ def OutputMotion(initR, initL, Rup, T, sampleT, dt, hip, Legs, thetaR_length,\
         thetaR_leg.append(InvK(d2, Legs, R_R, P_R))
         thetaL_leg.append(InvK(d2, Legs, R_L, P_L))
 
-        # if turn_angle != 0:
-        #     thetaR_leg[i-1][0] = DesiredTheta_R1[index_i-1]
-        #     thetaL_leg[i-1][0] = DesiredTheta_L1[index_i-1]
-        thetaR_leg[i-1][0] = DesiredTheta_R1[index_i-1]
-        thetaL_leg[i-1][0] = DesiredTheta_L1[index_i-1]
+        if turn_angle != 0:
+            thetaR_leg[i-1][0] = DesiredTheta_R1[index_i-1]
+            thetaL_leg[i-1][0] = DesiredTheta_L1[index_i-1]
+        # thetaR_leg[i-1][0] = DesiredTheta_R1[index_i-1]
+        # thetaL_leg[i-1][0] = DesiredTheta_L1[index_i-1]
 
         if index_i < 1:
             current_step = 0
