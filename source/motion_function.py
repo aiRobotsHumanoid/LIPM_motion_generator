@@ -159,7 +159,7 @@ def modifiable_foot_generation(dt, Amp, T, T_DSP, BoolPlot):
     return vec_sum
 
 def OutputMotion(initR, initL, Rup, T, sampleT, dt, hip, Legs, thetaR_length,\
-    PRx, PRy, PRz, PLx, PLy, PLz, Lean_angleR, Lean_angleL, DesiredTheta_R1, DesiredTheta_L1, turn_angle, index_acc, index_dec, foot_height):
+    PRx, PRy, PRz, PLx, PLy, PLz, Lean_angleR, Lean_angleL, DesiredTheta_R1, DesiredTheta_L1, Turn, index_acc, index_dec, foot_height):
     motor_job_data = 0
     hip_r = hip[0]
     hip_l = hip[1]
@@ -185,7 +185,7 @@ def OutputMotion(initR, initL, Rup, T, sampleT, dt, hip, Legs, thetaR_length,\
         thetaR_leg.append(InvK(d2, Legs, R_R, P_R))
         thetaL_leg.append(InvK(d2, Legs, R_L, P_L))
 
-        if turn_angle != 0:
+        if Turn == True:
             thetaR_leg[i-1][0] = DesiredTheta_R1[index_i-1]
             thetaL_leg[i-1][0] = DesiredTheta_L1[index_i-1]
         # thetaR_leg[i-1][0] = DesiredTheta_R1[index_i-1]

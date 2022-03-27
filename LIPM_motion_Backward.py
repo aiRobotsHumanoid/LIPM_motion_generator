@@ -18,39 +18,31 @@ class LIPM_motion:
     def __init__(self):
         """ LIPM參數設定, 1右 2左 """
         # 大腿擺幅, |0.05| < B < |0.1|
-        self.B1 = -0.095 # (+)往內畫 (-)往外畫 -0.04 
-        self.B2 = 0.105  # (+)往外畫 (-)往內畫
+        self.B1 = -80 * 0.001 # (+)往內畫 (-)往外畫 -0.04 
+        self.B2 = 70 * 0.001  # (+)往外畫 (-)往內畫
 
         # Hip側開
-        self.h1 = 0.4   # 右腳hip (+)抬左腳更低, 重心偏右 (-)抬左腳更高  -0.8
+        self.h1 = 0.30   # 右腳hip (+)抬左腳更低, 重心偏右 (-)抬左腳更高  -0.8
         self.h2 = 0.5    # 左腳hip (+)抬右腳更低, 重心偏左 (-)抬右腳更高   0.9
 
         # 膝蓋彎曲程度, 越大抬越高 (H > 0.05 調幅比較明顯) 
-        self.H1 = 0.07   # 0.06   
-        self.H2 = 0.053 
+        self.H1 = 0.063   # 0.06   
+        self.H2 = 0.050 
 
         # 腳底板傾斜角度, (+)腳尖往下 (-)腳尖往上
         self.CR1 = 0.75 #-0.75 -1.5
         self.CR2 = 0.5
         self.CL1 = -0.5  # 1.5
         self.CL2 = 0
-
-        # # Lean angle sequence [[step1], [step2]]
-        # self.A_Lean_angle_R = [[self.CR1, self.CR1, self.CR1, self.CR1, self.CR1], \
-        #                         [self.CR1, self.CR1*0.5+self.CR2*0.5, self.CR2*0.5, 0, 0]] # 夾角變大腳尖落地
-        # # self.A_Lean_angle_R = [[0, self.CR1, 0.66*self.CR1+0.33*self.CR2, 0.5*self.CR1+0.5*self.CR2, self.CR1], \
-        # #                        [self.CR1, 0.66*self.CR1+0.33*self.CR2, 0.33*self.CR1+0.66*self.CR2, self.CR2, 0]]
-        # self.A_Lean_angle_L = [[0.2*self.CL1, 0.4*self.CL1, 0.6*self.CL1, 0.8*self.CL1, self.CL1], \
-        #                        [self.CL1, 0.66*self.CL1+0.33*self.CL2, 0.33*self.CL1+0.66*self.CL2, self.CL2, 0]]
         
         # Lean angle sequence [[step1], [step2]] 
                             #    1      2       3       4       5                   
         # self.A_Lean_angle_R = [[ 7.0,   12.0,    14.0,    12.0,     11.0], \
         #                        [ 12,    9.0,    6,    4,     4] ] # (-)腳尖往下 (+)腳尖往上
-        self.A_Lean_angle_R = [[ 3,   8,    10,    11,     7], \
-                               [ 7,    6,    5,    4,     3] ] # (-)腳尖往下 (+)腳尖往上
-        self.A_Lean_angle_L = [[ 0,    -1,   -2,    -3,      -4], \
-                               [  -4,    -2,  -1,   0.5,      0.0]] # (+)腳尖往下 (-)腳尖往上
+        self.A_Lean_angle_R = [[ 3,   8,    10,    11,     12], \
+                               [ 10,    8,    6,    5,     3] ] # (-)腳尖往下 (+)腳尖往上
+        self.A_Lean_angle_L = [[  0,    0.0,   -1,    -2,     -3], \
+                               [  -4,    -2,  -1,   0.5,      -0.2]] # (+)腳尖往下 (-)腳尖往上
 
         # 向前的跨步距離 (+)forward (-)backward
         self.S1 = 0.08   # 0.1
@@ -66,7 +58,12 @@ class LIPM_motion:
         self.LeanAngleInit_L = self.L
 
         # 調整Hip yaw角度, (+)往左 (-)往右
-        self.turn_angle = 0
+        # self.turn_angle = 0
+        self.Turn = False
+        self.A_DesiredTheta_R = [[  0,   0,   0,   0,   0],\
+                                 [  0,   0,   0,   0,   0]]
+        self.A_DesiredTheta_L = [[  0,   0,   0,   0,   0],\
+                                 [  0,   0,   0,   0,   0]]
 
         """ 機器人質心高度設定 """
         self.foot_height = 0.59        # foot_height: 行走時髖關節的高度，影響機器人行走時蹲的幅度 
@@ -214,12 +211,9 @@ class LIPM_motion:
         DesiredTheta_R1 = []
         DesiredTheta_L1 = []        
         
-        if self.turn_angle != 0:
-            A_DesiredTheta_R = np.array(A_DesiredTheta_R) * self.turn_angle
-            A_DesiredTheta_L = np.array(A_DesiredTheta_L) * self.turn_angle
-
-            DesiredTheta_R1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, A_DesiredTheta_R, True)
-            DesiredTheta_L1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, A_DesiredTheta_L, True)
+        if self.Turn == True:
+            DesiredTheta_R1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, self.A_DesiredTheta_R, True)
+            DesiredTheta_L1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, self.A_DesiredTheta_L, True)
             
             DesiredTheta_R1 = np.array(DesiredTheta_R1) * Deg2Rad
             DesiredTheta_L1 = np.array(DesiredTheta_L1) * Deg2Rad
@@ -296,7 +290,7 @@ class LIPM_motion:
         # plt.show()
 
         motor_job_data, Motor_test_data = OutputMotion(self.initR, self.initL, self.Rup, T, sampleT, dt, self.hip, self.Legs, thetaR_length,\
-        PRx, PRy, PRz, PLx, PLy, PLz, Lean_angleR, Lean_angleL, DesiredTheta_R1, DesiredTheta_L1, self.turn_angle, index_acc, index_dec, foot_height_R)
+        PRx, PRy, PRz, PLx, PLy, PLz, Lean_angleR, Lean_angleL, DesiredTheta_R1, DesiredTheta_L1, self.Turn, index_acc, index_dec, foot_height_R)
         # print("motorjob\n", motor_job_data)
 
         return motor_job_data, Motor_test_data	

@@ -18,8 +18,8 @@ class LIPM_motion:
     def __init__(self):
         """ LIPM參數設定, 1右 2左 """
         # 大腿擺幅, |0.05| < B < |0.1|
-        self.B1 = -0.070  # (+)往內畫 (-)往外畫 -0.04 
-        self.B2 = 0.11  # (+)往外畫 (-)往內畫
+        self.B1 = -70 * 0.001  # (+)往內畫 (-)往外畫 -0.04 
+        self.B2 = 110 * 0.001  # (+)往外畫 (-)往內畫
 
         # Hip側開
         self.h1 = 0.54    # 右腳hip (+)抬左腳更低, 重心偏右 (-)抬左腳更高  -0.8
@@ -56,7 +56,8 @@ class LIPM_motion:
         self.LeanAngleInit_L = self.L
 
         # 調整Hip yaw角度(單位deg), (+)往左 (-)往右
-        self.turn_angle = 0
+        # self.turn_angle = 0.1
+        self.Turn = True
         self.A_DesiredTheta_R = [[   0,   -2,   -5,   -8,   -10],\
                                  [  -10,   -8,   -5,   -2,    0]]
         self.A_DesiredTheta_L = [[  -0,    0,    0,    0,    0],\
@@ -209,11 +210,13 @@ class LIPM_motion:
             # A_DesiredTheta_R = np.array(A_DesiredTheta_R) * self.turn_angle
             # A_DesiredTheta_L = np.array(A_DesiredTheta_L) * self.turn_angle
 
-        DesiredTheta_R1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, self.A_DesiredTheta_R, True)
-        DesiredTheta_L1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, self.A_DesiredTheta_L, True)
-        
-        DesiredTheta_R1 = np.array(DesiredTheta_R1) * Deg2Rad
-        DesiredTheta_L1 = np.array(DesiredTheta_L1) * Deg2Rad
+        if self.Turn == True:
+            print(self.Turn)
+            DesiredTheta_R1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, self.A_DesiredTheta_R, True)
+            DesiredTheta_L1 = Completed_R_generation(dt, 0, T, k_DesiredTheta, self.A_DesiredTheta_L, True)
+            
+            DesiredTheta_R1 = np.array(DesiredTheta_R1) * Deg2Rad
+            DesiredTheta_L1 = np.array(DesiredTheta_L1) * Deg2Rad
 
         if self.Forward == False:
             LR = -np.array(LR)
@@ -287,7 +290,7 @@ class LIPM_motion:
         # plt.show()
 
         motor_job_data, Motor_test_data = OutputMotion(self.initR, self.initL, self.Rup, T, sampleT, dt, self.hip, self.Legs, thetaR_length,\
-        PRx, PRy, PRz, PLx, PLy, PLz, Lean_angleR, Lean_angleL, DesiredTheta_R1, DesiredTheta_L1, self.turn_angle, index_acc, index_dec, foot_height_R)
+        PRx, PRy, PRz, PLx, PLy, PLz, Lean_angleR, Lean_angleL, DesiredTheta_R1, DesiredTheta_L1, self.Turn, index_acc, index_dec, foot_height_R)
         # print("motorjob\n", motor_job_data)
 
         return motor_job_data, Motor_test_data	
