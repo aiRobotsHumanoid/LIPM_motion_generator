@@ -64,7 +64,7 @@ class LIPM_motion:
                                  [  -0,    -1.5,    -3,    -1.5,    0]] 
         """ 機器人質心高度設定 """
         self.foot_height = 0.59        # foot_height: 行走時髖關節的高度，影響機器人行走時蹲的幅度 
-        self.zc = 0.38 #0.45           # zc: 質心高度，影響LIPM產生的質心軌跡 
+        self.zc = 0.55 #0.45           # zc: 質心高度，影響LIPM產生的質心軌跡 
         self.CoMx_bias = 0.            # CoMx_bias: 質心前後偏移量
 
         """ 動作時間設定 """

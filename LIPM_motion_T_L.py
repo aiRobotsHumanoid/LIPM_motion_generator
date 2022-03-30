@@ -10,26 +10,38 @@ import time
 from source.command_generator import Cmd_Generator
 
 write_data = True
-motion_file = "./source/motordata/Turn_L_data.csv"    # LIPM給模擬環境的動作檔 
+motion_file = "./source/motordata/Turn_L_data.csv"    # LIPM給模擬環境的動作檔
 w_file = "./Motion_cmd/Motion_Turn_L.csv" # motor的刻度檔案
 
 
 class LIPM_motion:
     def __init__(self):
-        """ LIPM參數設定, 1右 2左 """
-        # 大腿擺幅, |0.05| < B < |0.1|
-        self.B1 = -70 * 0.001  # (+)往內畫 (-)往外畫 -0.04 
-        self.B2 = 110 * 0.001  # (+)往外畫 (-)往內畫
+        """ LIPM參數設定, 1左 2右 """
+
+        self.B1 = 80* 0.001    # (+)往外畫 (-)往內畫 
+        self.B2 = -60 * 0.001  # (+)往內畫 (-)往外畫
 
         # Hip側開
-        self.h1 = 0.54    # 右腳hip (+)抬左腳更低, 重心偏右 (-)抬左腳更高  -0.8
-        self.h2 = 0.72    # 左腳hip (+)抬右腳更低, 重心偏左 (-)抬右腳更高   0.9
+        self.h1 = 0.3     # 右腳hip (+)抬左腳更低, 重心偏右 (-)抬左腳更高  -0.8
+        self.h2 = 0.3      # 左腳hip (+)抬右腳更低, 重心偏左 (-)抬右腳更高  0.9
 
         # 膝蓋彎曲程度, 越大抬越高 (H > 0.05 調幅比較明顯) 
-        self.H1 = 0.055   # 0.06   
-        self.H2 = 0.058 
+        self.H1 = 0.051   # 0.06   
+        self.H2 = 0.051 
 
-        # 腳底板傾斜角度, (+)腳尖往上 (-)腳尖往下
+        # # 大腿擺幅, |0.05| < B < |0.1|
+        # self.B1 = -70 * 0.001  # (+)往內畫 (-)往外畫 -0.04 
+        # self.B2 = 110 * 0.001  # (+)往外畫 (-)往內畫
+
+        # # Hip側開
+        # self.h1 = 0.54    # 右腳hip (+)抬左腳更低, 重心偏右 (-)抬左腳更高  -0.8
+        # self.h2 = 0.72    # 左腳hip (+)抬右腳更低, 重心偏左 (-)抬右腳更高   0.9
+
+        # # 膝蓋彎曲程度, 越大抬越高 (H > 0.05 調幅比較明顯) 
+        # self.H1 = 0.055   # 0.06   
+        # self.H2 = 0.058 
+
+        # 腳底板傾斜角度
         self.CR1 = 3.2 # (+)腳尖往上 (-)腳尖往下
         self.CR2 = 5 
         self.CL1 = -1.5  # (+)腳尖往下 (-)腳尖往上
@@ -58,6 +70,10 @@ class LIPM_motion:
         # 調整Hip yaw角度(單位deg), (+)往左 (-)往右
         # self.turn_angle = 0
         self.Turn = True
+        # self.A_DesiredTheta_R = [[  0,   0,   0,   0,   0],\
+        #                          [ 0,    1.5,    3,    1.5,    0]]
+        # self.A_DesiredTheta_L = [[   0,   2,   5,   8,   10],\
+        #                          [ 10,   8,   5,   2,    0]]
         self.A_DesiredTheta_R = [[  0,   0,   0,   0,   0],\
                                  [  0,   0,   0,   0,   0]]
         self.A_DesiredTheta_L = [[  0,   0,   0,   0,   0],\
@@ -65,7 +81,7 @@ class LIPM_motion:
 
         """ 機器人質心高度設定 """
         self.foot_height = 0.59        # foot_height: 行走時髖關節的高度，影響機器人行走時蹲的幅度 
-        self.zc = 0.38 #0.45           # zc: 質心高度，影響LIPM產生的質心軌跡 
+        self.zc = 0.55 #0.45           # zc: 質心高度，影響LIPM產生的質心軌跡 
         self.CoMx_bias = 0.            # CoMx_bias: 質心前後偏移量
 
         """ 動作時間設定 """
@@ -81,7 +97,7 @@ class LIPM_motion:
         # self.DesiredTheta_R = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
         # self.DesiredTheta_L = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 
-        self.Rup = True                 # Rup: 是否先抬右腳
+        self.Rup = False                 # Rup: 是否先抬右腳
         self.Forward = True
         self.Shift = False
         self.NoPeriod_acc = 0
