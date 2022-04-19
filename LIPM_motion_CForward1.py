@@ -10,7 +10,7 @@ import time
 from source.command_generator import Cmd_Generator
 
 write_data = True
-motion_file = "./source/motordata/cforward_data.csv"    # LIPM給模擬環境的動作檔 
+motion_file = "./source/motordata/cforward_data1.csv"    # LIPM給模擬環境的動作檔 
 w_file = "./Motion_cmd/Motion_CForward1.csv" # motor的刻度檔案
 
 
@@ -18,16 +18,16 @@ class LIPM_motion:
     def __init__(self):
         """ LIPM參數設定, 1右 2左 """
         # 大腿擺幅, |0.05| < B < |0.1|
-        self.B1 = -105* 0.001  # (+)往內畫 (-)往外畫 -0.04 
-        self.B2 = 110 * 0.001  # (+)往外畫 (-)往內畫
+        self.B1 = -90* 0.001  # (+)往內畫 (-)往外畫 -0.04 
+        self.B2 = 95 * 0.001  # (+)往外畫 (-)往內畫
 
         # Hip側開
         self.h1 = 0.56    # 右腳hip (+)抬左腳更低, 重心偏右 (-)抬左腳更高  -0.8
-        self.h2 = 0.55   # 左腳hip (+)抬右腳更低, 重心偏左 (-)抬右腳更高   0.9
+        self.h2 = 0.6   # 左腳hip (+)抬右腳更低, 重心偏左 (-)抬右腳更高   0.9
 
         # 膝蓋彎曲程度, 越大抬越高 (H > 0.05 調幅比較明顯) 
-        self.H1 = 0.064  # 0.06   
-        self.H2 = 0.0565
+        self.H1 = 0.066  # 0.06   
+        self.H2 = 0.054
 
         # 腳底板傾斜角度, (+)腳尖往上 (-)腳尖往下
         self.CR1 = 3.2 # (+)腳尖往上 (-)腳尖往下
@@ -39,12 +39,12 @@ class LIPM_motion:
                             #    1      2       3       4       5                   
         self.A_Lean_angle_R = [[ -5,   -8,    -8,    -9.5,     -10], \
                                [ -8,      -6,    -5,   -3,     -5 ] ]
-        self.A_Lean_angle_L = [[ -0.4,     -0.3,   -0.3,   -0.3,     -0.3], \
+        self.A_Lean_angle_L = [[ -0.5,     -0.5,   -0.5,   -0.4,     -0.3], \
                                [-0.3,    -1,    -2,    -1.5,      -1.2]]
         
         # 向前的跨步距離 (+)forward (-)backward
         self.S1 = 0.05   # 0.1
-        self.S2 = 0.011
+        self.S2 = 0.04
 
         # 側移的跨步距離 (側移時用)
         self.LyR = [0.035, 0]
