@@ -88,8 +88,8 @@ class LIPM_motion:
 
         """ 機器人基礎姿態設定 """
         # Set Initial Pose
-        self.initR = [0,  0.0,   0.4, -0.8,  0.4,  0.0] 
-        self.initL = [0,  0.0,   0.4, -0.8,  0.4,  0.0]
+        self.initR = [0,  0,   -0.4, -0.8,  0.4,  0] 
+        self.initL = [0,  0,    0.4,  0.8,  0.4,  0]
         # Legs : Legs link lenghth (mm)
         self.Legs = np.array([102.5, 170, 175, 70.33, 34.7])/1000
 
@@ -202,7 +202,7 @@ class LIPM_motion:
         Lean_angleR = np.array(Lean_angleR) * Deg2Rad
         Lean_angleL = np.array(Lean_angleL) * Deg2Rad
 
-        # ## turn angle ##	
+        ## turn angle ##	
         DesiredTheta_R1 = []
         DesiredTheta_L1 = []        
         

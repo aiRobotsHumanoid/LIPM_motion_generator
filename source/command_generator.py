@@ -4,13 +4,29 @@ from math import *
 import time
 import csv
 
+
+
 class Cmd_Generator:
     def __init__(self, motion_file, w_file):
 
+        """ Presetting """
+
         self.r_file = motion_file
         self.w_file = w_file
-        self.add_Dynamixel_data = True
+
+        # 用哪些馬達
+        self.add_Dynamixel_data = True # True False
         self.add_Haitai_data = [30, 32, 33, 34, 40, 42, 43, 44] 
+
+        if len(self.add_Haitai_data) == 4:
+            self.frame_range = 6
+        elif len(self.add_Haitai_data) == 8:
+            self.frame_range = 11
+        print(f"len of add_Haitai_data = {len(self.add_Haitai_data)}")
+
+        # 每個timestep間隔
+        self.time_step = 0.1
+
 
         with open(self.r_file, 'r', newline='') as r_f:
             self.datas = pd.read_csv(r_f, header=None)
@@ -21,32 +37,37 @@ class Cmd_Generator:
         self.mode_list = np.ones([len(self.datas),len(self.datas[0])]) # 0: pos of this step is same as pos of last step
         self.vel_list = np.ones([len(self.datas),len(self.datas[0])])
 
-    def mode_scan(self):
+    def data_scan(self):
+        """
+            @brief: Scan the datas to record the Haitai mode and Dyn velocity
+
+            @param mode_list - Haitai mode
+            @param vel_list  - Dyn velocity
+        """
         for frame_idx, frame in enumerate(self.datas):
-            for list_idx in range(len(frame)):
+            for list_idx in range(self.frame_range):
                 motordata = frame[list_idx]
                 
-                # Motorid
+                ## Motorid ##
                 motorid = self.motor_list[list_idx]
 
-                # Position command
-                if motorid == 32 or motorid == 42 :
-                    p_cmd = np.round(-motordata, 2)
-                else: p_cmd = np.round(motordata, 2)
+                ## Position command ##
+                p_cmd = np.round(motordata, 2)
                 
-                # Set HT03 mode 0 (situation:first,last, the same command)
+                ## Set HT03 mode 0 (situation:first,last, the same command) ##
                 if frame_idx==0 or frame_idx==len(self.datas)-1:
                     self.mode_list[frame_idx][list_idx] = 0
 
                 elif p_cmd==self.pre_pos[list_idx]:
                     self.mode_list[frame_idx-1][list_idx] = 0
 
-                # Calculate Dynamixel velocity
+                ## Calculate Dynamixel velocity ##
                 if  self.add_Dynamixel_data == True:
                     if frame_idx == 0:
                         time_cmd = 2
                     else:
                         time_cmd = 0.1
+
                     if motorid in [31, 41]: # Pro100
                         scaled = 2920 / 175.2  # (max/ (deg/sec))
                         self.vel_list[frame_idx][list_idx] = np.round((p_cmd - self.pre_pos[list_idx]) / time_cmd * scaled)
@@ -64,9 +85,16 @@ class Cmd_Generator:
         return self.mode_list, self.vel_list
 
     def write_cmd(self):
-        mode_list, vel_list = self.mode_scan()
+        """ 
+            Data Format : 
+            HaiTai       : [motortype, motorid, mode, p_cmd, time_cmd, t_ff, kp, kd]
+            Dynamixel    : [motortype, motorid, p_cmd, vel]
+            Wait Command : [motortype, wait_time]
 
-        """ Data Format : [motortype, motorid, mode, p_cmd, time_cmd, t_ff, kp, kd] """
+            @param command_list - All motor cmd
+        """
+        mode_list, vel_list = self.data_scan()
+
         command_list = []
         for frame_idx, frame in enumerate(self.datas):
             if frame_idx == 0:
@@ -76,13 +104,13 @@ class Cmd_Generator:
                     command_list.append(command)
 
             # frame_range = len(frame)-6 # right leg
-            for list_idx in range(len(frame)):
-            # for list_idx in range(len(frame)):
+            for list_idx in range(self.frame_range):
                 motordata = frame[list_idx]
 
-                # Motorid
+                ## Motorid ##
                 motorid = self.motor_list[list_idx]
 
+                ## motortype ##
                 # Right Leg
                 if motorid == 30 or motorid == 32 or motorid == 33 or motorid == 34:
                     motortype = 3
@@ -94,33 +122,33 @@ class Cmd_Generator:
                     motortype = 5
 
 
-                # Velocity (just for Dynamixel)
+                ## Velocity (just for Dynamixel) ##
                 vel = vel_list[frame_idx][list_idx]
                 
-                # Mode (just for haitai)
+                ## Mode (just for haitai) ##
                 mode = mode_list[frame_idx][list_idx]
 
-                # Position command
-                if motorid == 31 or motorid == 32  or motorid == 35 or motorid == 41 or motorid == 43 or motorid == 45: 
+                ## Position command (check +/-) ##
+                if motorid == 31 or motorid == 35 or motorid == 41 or motorid == 45: 
                     p_cmd = np.round(-motordata, 2)
                 else: p_cmd = np.round(motordata, 2)
 
-                # Time command (sec)
+                ## Time command (sec) ##
                 if frame_idx == 0:
                     time_cmd = 2 
-                else: time_cmd = 0.1
+                else: time_cmd = self.time_step
 
-                # Torque command
+                ## Torque command ##
                 t_ff = 0
 
-                # Kp command, if the motion is jumping, we need to set a smaller kp 
+                ## Kp command, if the motion is jumping, we need to set a smaller kp ##
                 if frame_idx >= 0 :
                     kp = 100
                 
-                # Kd command
+                ## Kd command ##
                 kd = 0.2
 
-                # Write Command
+                """ Write Command """
                 if frame_idx==len(self.datas)-1:
                     if motorid == 3 or motorid == 31 or motorid == 35 or motorid == 41 or motorid == 45:
                         command = [motortype, motorid, p_cmd, vel]
@@ -138,12 +166,14 @@ class Cmd_Generator:
                         command = [motortype, motorid, p_cmd, vel]
                         if self.add_Dynamixel_data == True:
                             command_list.append(command)
+
                     elif motorid in self.add_Haitai_data:
                         command = [motortype, motorid, mode, p_cmd, time_cmd, t_ff, kp, kd]
                         command_list.append(command)
                 self.pre_pos[list_idx] = p_cmd
             
-            # Wait Command = [motortype, wait_time]
+
+            ## Wait Command = [motortype, wait_time] ##
             wait_command = [100, time_cmd*pow(10, 6)]
             command_list.append(wait_command)
         ending_command = [100, 3*pow(10, 6)]  # c++ usleep(1) = 10^-6 sec

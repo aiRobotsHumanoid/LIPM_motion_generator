@@ -117,21 +117,17 @@ def modifiable_foot_generation(dt, Amp, T, T_DSP, BoolPlot):
     N = len(Amp[0])
 
     if a == 3:
-        lenght_t = math.floor(N*T/dt)
         t1 = T_DSP / 2
         t2 = T - T_DSP / 2
         T_SSP = T - T_DSP
         biasx = 0
         biasy = 0
-        i = 0
         t_index = 1
         n_index = 1	
         t_real = 0
-        Foot_x_y_z = []
         size_t_temp = N * T / dt
 
         for k in range(1, int(size_t_temp)+1):
-            Foot_x_y_z = []
             t = t_index * dt
             Ampx = Amp[0][n_index - 1]
             Ampy = Amp[1][n_index - 1]
@@ -144,9 +140,6 @@ def modifiable_foot_generation(dt, Amp, T, T_DSP, BoolPlot):
             t_index = t_index + 1
             t_real = t_real + dt
 
-            # Foot_x_y_z.append(temp_x)
-            # Foot_x_y_z.append(temp_y)
-            # Foot_x_y_z.append(temp_z)
             vec_sum.append([temp_x, temp_y, temp_z])
 
             if t_real > n_index*T:
@@ -164,13 +157,17 @@ def OutputMotion(initR, initL, Rup, T, sampleT, dt, hip, Legs, thetaR_length,\
     hip_r = hip[0]
     hip_l = hip[1]
     samplek = sampleT / dt
-    d2 = 43.42 / 1000 #48.25
+    d2 = 43.42 / 1000  # motor35/45 ＆ 地面的距離
     ####################################
     thetaR_leg = []
     thetaL_leg = []
-    PR_sample = []
-    PL_sample = []
 
+    """ 
+        @brief  Motion Planning : Calculate Inverse Kinetic for all motor
+
+        @param  thetaR_leg - planned motion for right leg
+        @param  thetaL_leg - planned motion for right leg
+    """
     for i in range(1, thetaR_length+1):
         index_i = int(i * samplek)
         
@@ -204,29 +201,27 @@ def OutputMotion(initR, initL, Rup, T, sampleT, dt, hip, Legs, thetaR_length,\
         else:
             if Rup:
                 thetaR_leg[i - 1][1] = hip_r * thetaR_leg[i - 1][1]
-                # thetaL_leg[i - 1][1] = hip_l * 1 * thetaL_leg[i - 1][1]
-                # if (i == thetaR_length):
-                #     thetaL_leg[i - 1][2] = thetaL_leg[i - 1][2]
-                # else:
-                #     thetaL_leg[i - 1][2] = thetaL_leg[i - 1][2] * 1	
             else:	
                 thetaL_leg[i - 1][1] = hip_l * thetaL_leg[i - 1][1]													
 
-    MScaleR_Leg_rows = []
-    MScaleL_Leg_rows = []
+
+    """
+        @brief  Calculate motor scaled and offset in Sim and Real
+
+        @param  ScaledthetaX_leg_test - motor data for simulation
+        @param  Motor_ScaledthetaX_leg_test - motor data for real world
+    """
     size = 6, thetaR_length
-    # ScaledthetaR_leg = np.zeros(size, np.float32)
-    # ScaledthetaL_leg = np.zeros(size, np.float32) 
     ScaledthetaR_leg_test = np.zeros(size, np.float64)
     ScaledthetaL_leg_test = np.zeros(size, np.float64)
     Motor_ScaledthetaR_leg_test = np.zeros(size, np.float64)
     Motor_ScaledthetaL_leg_test = np.zeros(size, np.float64)
 
-
     # Joint angle: radian -> motor resolution
+    # For Sim scaled (rad to rad)
     MScaleR_Leg = [1, 1, 1, 1, 1, 1]
     MScaleL_Leg = [1, 1, 1, 1, 1, 1]
-
+    # For Real scaled (rad to HaiTai/Dyn)
     Motor_MScaleR_Leg = [1, 180/math.pi, 1, 1, 1, 180/math.pi]
     Motor_MScaleL_Leg = [1, 180/math.pi, 1, 1, 1, 180/math.pi]
 
@@ -237,40 +232,46 @@ def OutputMotion(initR, initL, Rup, T, sampleT, dt, hip, Legs, thetaR_length,\
     MotorOffsetL = []	
 
     # motor rotation +/-
-    Motor_Dir_R = [1, 1,-1,-1,-1,1]
-    Motor_Dir_L = [1, 1,-1,-1,-1,1]
+    Motor_Dir_R = [1, 1,  1,-1, -1, 1]
+    Motor_Dir_L = [1, 1, -1, 1, -1, 1]
     for j in range(6):
+        """ Calculate motor initial offset  """
+        """ @param  Offset - Like bias, how far are the planned motion(in time 0) and the Initial pose  """
+        # For Sim
         MotorOffsetR.append(initR[j] - Motor_Dir_R[j] * thetaR_leg[0][j])
         MotorOffsetL.append(initL[j] - Motor_Dir_L[j] * thetaL_leg[0][j])
-        # print(f"MotorOffsetL = {MotorOffsetL}")
+        # For Real
         Motor_MotorOffsetR.append(initR[j] - Motor_Dir_R[j] * thetaR_leg[0][j])
         Motor_MotorOffsetL.append(initL[j] - Motor_Dir_L[j] * thetaL_leg[0][j])
-    # for i in range(thetaR_length):
-    #     MScaleR_Leg.append(MScaleR_Leg_rows)
-    #     MScaleL_Leg.append(MScaleL_Leg_rows)
-    #     Motor_MScaleR_Leg.append(MScaleR_Leg_rows)
-    #     Motor_MScaleL_Leg.append(MScaleL_Leg_rows)
-    # print(f"MScaleR_Leg = {MScaleR_Leg}")
-    # print(f"Motor_MScaleR_Leg = {Motor_MScaleR_Leg}")
     
     for i in range(thetaR_length):
+        """ Calculate the motor data with scaled and offset """
         for j in range(6):
+            # For Sim   
             ScaledthetaR_leg_test[j][i] = MotorOffsetR[j] + thetaR_leg[i][j] * MScaleR_Leg[j] * Motor_Dir_R[j]
             ScaledthetaL_leg_test[j][i] = MotorOffsetL[j] + thetaL_leg[i][j] * MScaleL_Leg[j] * Motor_Dir_L[j]
-            Motor_ScaledthetaR_leg_test[j][i] = thetaR_leg[i][j] * Motor_MScaleR_Leg[j] * Motor_Dir_R[j] + Motor_MotorOffsetR[j] 
-            Motor_ScaledthetaL_leg_test[j][i] = thetaL_leg[i][j] * Motor_MScaleL_Leg[j] * Motor_Dir_L[j] + Motor_MotorOffsetL[j] 
+            # For Real
+            Motor_ScaledthetaR_leg_test[j][i] = (Motor_MotorOffsetR[j] + thetaR_leg[i][j] * Motor_Dir_R[j]) * Motor_MScaleR_Leg[j]
+            Motor_ScaledthetaL_leg_test[j][i] = (Motor_MotorOffsetL[j] + thetaL_leg[i][j] * Motor_Dir_L[j]) * Motor_MScaleL_Leg[j]
+
+            # if i == 0: # 應該要跟 init pose(rad/s) 相同 => 修改 Motor_Dir_R / Motor_Dir_L
+            #     print(f"{Motor_ScaledthetaR_leg_test[j][i]/Motor_MScaleR_Leg[j]} = ({Motor_MotorOffsetR[j]} + {thetaR_leg[i][j]} * {Motor_Dir_R[j]})")
+            #     print(f"{Motor_ScaledthetaL_leg_test[j][i]/Motor_MScaleL_Leg[j]} = ({Motor_MotorOffsetL[j]} + {thetaL_leg[i][j]} * {Motor_Dir_L[j]})")
             if j == 0:
                 Motor_ScaledthetaR_leg_test[j][i] = thetaR_leg[i][j] * Motor_MScaleR_Leg[j] * Motor_Dir_R[j]
                 Motor_ScaledthetaL_leg_test[j][i] = thetaL_leg[i][j] * Motor_MScaleL_Leg[j] * Motor_Dir_L[j] 
                 # print(f"{Motor_ScaledthetaR_leg_test[j][i]} = {thetaR_leg[i][j]} * {Motor_MScaleR_Leg[j]} * {Motor_Dir_R[j]}")
     
-    # Back to initial pose
+    """ FORCE the robot back to initial pose in the end """
     for i in range(6):
+        # For Sim
         ScaledthetaR_leg_test[i][thetaR_length-1] = ScaledthetaR_leg_test[i][0]
         ScaledthetaL_leg_test[i][thetaR_length-1] = ScaledthetaL_leg_test[i][0]
+        # For Real
         Motor_ScaledthetaR_leg_test[i][thetaR_length-1] = Motor_ScaledthetaR_leg_test[i][0]
         Motor_ScaledthetaL_leg_test[i][thetaR_length-1] = Motor_ScaledthetaL_leg_test[i][0]
 
+    """ For Sim, let the robot be stable after walking """
     # add more stable step 
     # for i in range(5):
     #     ScaledthetaR_leg_test = np.append(ScaledthetaR_leg_test, ScaledthetaR_leg_test[i][0])
@@ -279,12 +280,17 @@ def OutputMotion(initR, initL, Rup, T, sampleT, dt, hip, Legs, thetaR_length,\
         # Motor_ScaledthetaL_leg_test = np.append(Motor_ScaledthetaL_leg_test, Motor_ScaledthetaL_leg_test[i][0])
     
 
+    """ Collect motor data """
+    # For Sim
     motor_job_data =  np.concatenate((ScaledthetaR_leg_test, ScaledthetaL_leg_test), axis=0)
-    Motor_test_data = np.concatenate((Motor_ScaledthetaR_leg_test, Motor_ScaledthetaL_leg_test), axis=0)
     motor_job_data = np.round(motor_job_data.T, 3)
-    Motor_test_data = np.round(Motor_test_data.T, 3)
     for i in range(30):
         motor_job_data = np.append(motor_job_data, [motor_job_data[-1]], axis=0)
+
+    # For Real
+    Motor_test_data = np.concatenate((Motor_ScaledthetaR_leg_test, Motor_ScaledthetaL_leg_test), axis=0)
+    Motor_test_data = np.round(Motor_test_data.T, 3)
+    
     # print(f'motor_job_data = {len(motor_job_data)}')
     return motor_job_data , Motor_test_data
 
