@@ -21,8 +21,8 @@ class Cmd_Generator:
         if len(self.add_Haitai_data) == 4:
             self.frame_range = 6
         elif len(self.add_Haitai_data) == 8:
-            self.frame_range = 11
-        print(f"len of add_Haitai_data = {len(self.add_Haitai_data)}")
+            self.frame_range = 12
+        # print(f"len of add_Haitai_data = {len(self.add_Haitai_data)}")
 
         # 每個timestep間隔
         self.time_step = 0.1

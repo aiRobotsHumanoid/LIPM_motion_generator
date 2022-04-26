@@ -78,7 +78,7 @@ class LIPM_motion:
         self.CoMx_bias = 0.            # CoMx_bias: 質心前後偏移量
 
         """ 動作時間設定 """
-        self.footstep = 3
+        self.footstep = 2
         self.k_DSP = 0.4419             # 值越小，抬腳的時間越長
         self.T = 2                      # T: 一步的週期時間(sec)
 
