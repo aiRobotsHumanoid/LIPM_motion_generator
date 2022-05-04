@@ -64,7 +64,7 @@ class Cmd_Generator:
                 ## Calculate Dynamixel velocity ##
                 if  self.add_Dynamixel_data == True:
                     if frame_idx == 0:
-                        time_cmd = 2
+                        time_cmd = 1
                     else:
                         time_cmd = 0.1
 
@@ -135,7 +135,7 @@ class Cmd_Generator:
 
                 ## Time command (sec) ##
                 if frame_idx == 0:
-                    time_cmd = 2 
+                    time_cmd = 1 
                 else: time_cmd = self.time_step
 
                 ## Torque command ##
