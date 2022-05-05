@@ -64,7 +64,7 @@ class Cmd_Generator:
                 ## Calculate Dynamixel velocity ##
                 if  self.add_Dynamixel_data == True:
                     if frame_idx == 0:
-                        time_cmd = 1
+                        time_cmd = 0.8
                     else:
                         time_cmd = 0.1
 
@@ -99,7 +99,7 @@ class Cmd_Generator:
         for frame_idx, frame in enumerate(self.datas):
             if frame_idx == 0:
                 # command = [motortype, motorid, p_cmd, vel]
-                command = [5, 3, 0, 8.0]
+                command = [5, 3, -0.3, 8.0]
                 if self.add_Dynamixel_data == True:
                     command_list.append(command)
 
@@ -135,7 +135,7 @@ class Cmd_Generator:
 
                 ## Time command (sec) ##
                 if frame_idx == 0:
-                    time_cmd = 1 
+                    time_cmd = 0.8 
                 else: time_cmd = self.time_step
 
                 ## Torque command ##
